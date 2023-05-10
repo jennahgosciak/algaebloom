@@ -185,6 +185,54 @@ WHERE
   m.split = 'test'
 """
 
+test_oos_query = """
+SELECT 
+  m.uid,
+  l.density,
+  l.region,
+  l.severity,
+  m.latitude,
+  m.longitude,
+  m.date,
+  e.elevation,
+  e.mine,
+  e.maxe,
+  e.dife,
+  e.avge,
+  e.stde,
+  sl.severity_100,
+  sl.logDensity_100,
+  sl.count_100,
+  sl.severity_300,
+  sl.logDensity_300,
+  sl.count_300,
+  sl.severity_1000,
+  sl.logDensity_1000,
+  sl.count_1000,
+  st.imtype,
+  st.prop_lake_500,
+  st.r_500,
+  st.g_500,
+  st.b_500,
+  st.prop_lake_1000,
+  st.r_1000,
+  st.g_1000,
+  st.b_1000,
+  st.prop_lake_2500,
+  st.r_2500,
+  st.g_2500,
+  st.b_2500
+FROM meta_orig AS m
+LEFT JOIN elevation_dem AS e
+  ON m.uid = e.uid
+LEFT JOIN spat_lag AS sl
+  ON m.uid = sl.uid
+LEFT JOIN sat AS st
+  ON m.uid = st.uid
+INNER JOIN test_oos_labels AS l
+  ON m.uid = l.uid
+"""
+
 def add_table(data,tab_name,db_str=db):
     db_con = sqlite3.connect(db_str)
     dn = data.copy()
@@ -207,6 +255,8 @@ def get_data(data_type='train',db_str=db,split_pred=False):
         sql = train_query
     elif data_type == 'test':
         sql = test_query
+    elif data_type == 'test_oos':
+        sql = test_oos_query
     dat = pd.read_sql(sql,con=db_con)
     org_reg(dat) # Region ordinal encode
     # Winning solution used landsat-7 data
